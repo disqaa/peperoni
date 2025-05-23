@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Checkout</h2>
+
+<h4>Order Summary</h4>
+<ul>
+  {% for item in items %}
+  <li>{{ item.product.name if item.product else item['product'].name }} x {{ item.quantity if item.quantity is not none else item['quantity'] }} - ${{ '%.2f' % (item.product.price * (item.quantity if item.quantity is not none else item['quantity'])) }}</li>
+  {% endfor %}
+</ul>
+
+<form method="POST">
+  {{ form.hidden_tag() }}
+  <div class="mb-3">
+    {{ form.delivery_time.label }}{{ form.delivery_time(class="form-control") }}
+  </div>
+  {{ form.submit(class="btn btn-success") }}
+</form>
+
+{% endblock %}

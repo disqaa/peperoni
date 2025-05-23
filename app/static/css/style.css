@@ -1,0 +1,25 @@
+:root{
+  --main-font: 'Inter', sans-serif;   /* замените по желанию */
+  --accent-color: #e63946;
+}
+
+body{
+  font-family: var(--main-font);
+  margin:0 auto;
+  max-width:800px;
+  padding:1rem;
+}
+
+header nav a{ margin-right:.5rem; }
+.card, .order{
+  border:1px solid #ccc;
+  padding:.5rem;
+  margin:.5rem 0;
+}
+.flash{ list-style:none; padding:0; color:var(--accent-color); }
+
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
