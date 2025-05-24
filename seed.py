@@ -1,24 +1,44 @@
 from app import create_app
 from app.extensions import db
-from app.models import Product
+from app.models import Product, Ingredient
 
-def seed_products():
-    app = create_app()
-    with app.app_context():
-        if Product.query.first():
-            print("Продукты уже есть в базе. Сеединг не нужен.")
-            return
+app = create_app()
+with app.app_context():
+    db.drop_all()
+    db.create_all()
 
-        products = [
-            Product(name='Pizza 1', description='Classic cheese and tomato pizza', price=7.99),
-            Product(name='Pizza 2', description='Pepperoni and cheese', price=8.99),
-            Product(name='Pizza 3', description='Ham and pineapple', price=9.49),
-            Product(name='Pizza 4', description='Mixed vegetables and cheese', price=8.50),
-        ]
 
-        db.session.add_all(products)
-        db.session.commit()
-        print("Продукты успешно добавлены в базу!")
+    cheese      = Ingredient(name="Сыр моцарелла", price=0.5)
+    sauce       = Ingredient(name="Томатный соус", price=0.5)
+    pepperoni   = Ingredient(name="Пепперони", price=0.5)
+    mushrooms   = Ingredient(name="Грибы", price=0.5)
+    olives      = Ingredient(name="Оливки", price=0.5)
 
-if __name__ == '__main__':
-    seed_products()
+
+    margherita = Product(
+        name="Маргарита",
+        description="Классика: томатный соус, сыр моцарелла, базилик.",
+        price=7.99,
+        image_url="/static/images/photo_2025-05-25_01-24-28.jpg",
+        ingredients=[sauce, cheese]
+    )
+
+    pepperoni_pizza = Product(
+        name="Пепперони",
+        description="Щедрая порция пепперони и моцареллы.",
+        price=9.49,
+        image_url="/static/images/",
+        ingredients=[sauce, cheese, pepperoni]
+    )
+
+    fungi = Product(
+        name="чиназес",
+        description="Чесночные, веселые грибы, грибы, томатный соус и сыр.",
+        price=8.99,
+        image_url="/static/images/.jpg",
+        ingredients=[sauce, cheese, mushrooms]
+    )
+
+    db.session.add_all([margherita, pepperoni_pizza, fungi, olives])  # olives отдельно
+    db.session.commit()
+    print("Данные загружены, все ура")

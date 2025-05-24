@@ -1,10 +1,8 @@
 from flask import Flask
 from .config import Config
-from .extensions import db, login_manager
+from .extensions import db, login_manager, csrf
 from .auth.routes import auth_bp
 from .main.routes import main_bp
-
-
 
 
 def create_app():
@@ -16,7 +14,7 @@ def create_app():
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
-
+    csrf.init_app(app)
     with app.app_context():
         db.create_all()
 

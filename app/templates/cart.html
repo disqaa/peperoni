@@ -1,33 +1,72 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
-<h2>Your Cart</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Корзина</h2>
 
-{% if items %}
-<table class="table">
-  <thead>
-    <tr>
-      <th>Product</th><th>Quantity</th><th>Price</th><th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in items %}
-    <tr>
-      <td>{{ item.product.name if item.product else item['product'].name }}</td>
-      <td>{{ item.quantity if item.quantity is not none else item['quantity'] }}</td>
-      <td>${{ '%.2f' % (item.product.price * (item.quantity if item.quantity is not none else item['quantity'])) }}</td>
-      <td>
-        <form method="POST" action="{{ url_for('main.remove_from_cart', product_id=item.product.id if item.product else item['product'].id) }}">
-          <button class="btn btn-danger btn-sm">Remove</button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-<a href="{{ url_for('main.checkout') }}" class="btn btn-primary">Proceed to Checkout</a>
-{% else %}
-<p>Your cart is empty.</p>
-{% endif %}
+    {% if items %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Товар</th>
+                <th>Ингредиенты</th>
+                <th>Количество</th>
+                <th>Сумма</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>
+                    {% if item.product %}
+                        {{ item.product.name }}
+                    {% else %}
+                        {{ item['product'].name }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.chosen_ingredients %}
+                        {{ item.chosen_ingredients }}
+                    {% else %}
+                        {{ item['chosen_ingredients'] }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.quantity %}
+                        {{ item.quantity }}
+                    {% else %}
+                        {{ item['quantity'] }}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.price %}
+                        {{ "%.2f"|format(item.price) }} $
+                    {% else %}
+                        {{ "%.2f"|format(item['product'].price * item['quantity']) }} $
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
+    <div class="text-end">
+        <strong>Итого:
+            {{
+                "%.2f"|format(
+                    items | sum(attribute='price') if items[0].price is defined
+                    else items | map(attribute='product') | sum(attribute='price')
+                )
+            }} $
+        </strong>
+    </div>
+
+    <div class="mt-3 text-end">
+        <a href="{{ url_for('main.checkout') }}" class="btn btn-success">Оформить заказ</a>
+    </div>
+
+    {% else %}
+    <p>Ваша корзина пуста.</p>
+    {% endif %}
+</div>
 {% endblock %}

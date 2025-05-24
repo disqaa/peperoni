@@ -16,6 +16,5 @@ class DeliveryForm(FlaskForm):
     delivery_time = DateTimeField(
         'Preferred delivery time (YYYY-MM-DD HH:MM)',
         format='%Y-%m-%d %H:%M',
-        validators=[DataRequired()]
-    )
+        validators=[DataRequired()])
     submit = SubmitField('Place order')
