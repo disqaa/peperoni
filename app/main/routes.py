@@ -35,48 +35,40 @@ def get_cart_items():
                 items.append({'product': product, 'quantity': qty, 'chosen_ingredients': ing})
     return items
 
-
+#логика с картой
 @main_bp.route('/add_to_cart/<int:product_id>', methods=['POST'])
+@login_required
 def add_to_cart(product_id):
-    #работа с меню здесб, не забыть!!!!!!!!!!!
     product = Product.query.get_or_404(product_id)
     quantity = int(request.form.get('quantity', 1))
 
+    chosen_ingredients = {}
+    total_ingredient_price = 0.0
+    for ingredient in product.ingredients:
+        key = f'ingredient_{ingredient.id}'
+        count_str = request.form.get(key)
+        if count_str:
+            count = int(count_str)
+            if count > 0:
+                chosen_ingredients[ingredient.name] = count
+                total_ingredient_price += ingredient.price * count
 
-    chosen_ingredients_str = "Стандартный набор"
-    unit_price = product.price
-    line_price = unit_price * quantity
+    total_price = (product.price + total_ingredient_price) * quantity
 
-    if current_user.is_authenticated:
-        cart_item = CartItem.query.filter_by(
-            user_id=current_user.id,
-            product_id=product_id,
-            chosen_ingredients=chosen_ingredients_str
-        ).first()
+    ingredient_str = ", ".join([f"{name} x{qty}" for name, qty in chosen_ingredients.items()])
 
-        if cart_item:
-            cart_item.quantity += quantity
-            cart_item.price += line_price
-        else:
-            cart_item = CartItem(
-                user_id=current_user.id,
-                product_id=product_id,
-                quantity=quantity,
-                chosen_ingredients=chosen_ingredients_str,
-                price=line_price
-            )
-            db.session.add(cart_item)
-        db.session.commit()
-    else:
-    #лохов в сессию
-        cart = session.get('cart', {})
-        key = f"{product_id}|{chosen_ingredients_str}"
-        cart[key] = cart.get(key, 0) + quantity
-        session['cart'] = cart
-        session.modified = True
-
-    flash(f'Добавлено: {quantity} × "{product.name}"', 'success')
+    cart_item = CartItem(
+        user_id=current_user.id,
+        product_id=product.id,
+        quantity=quantity,
+        chosen_ingredients=ingredient_str,
+        price=total_price
+    )
+    db.session.add(cart_item)
+    db.session.commit()
+    flash('Товар добавлен в корзину.', 'success')
     return redirect(url_for('main.menu'))
+
 
 @main_bp.route('/cart')
 def cart():
