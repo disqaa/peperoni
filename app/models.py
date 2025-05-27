@@ -59,6 +59,7 @@ class Order(db.Model):
     total = db.Column(db.Float, nullable=False)
     items = db.relationship('OrderItem', backref='order', lazy=True)
     chosen_ingredients = db.Column(db.Text, default="")
+    address = db.Column(db.String(255), nullable=False)
 
 
 class OrderItem(db.Model):

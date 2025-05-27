@@ -111,7 +111,7 @@ def remove_from_cart(product_id):
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
-    items = get_cart_items()
+    items = get_cart_items()  # твоя функция получения корзины
     if not items:
         flash('Корзина пуста.', 'warning')
         return redirect(url_for('main.menu'))
@@ -119,31 +119,36 @@ def checkout():
     form = DeliveryForm()
     if form.validate_on_submit():
         delivery_time = form.delivery_time.data
+        address = form.address.data
 
-#подсчет суммы, сверять название и типы
-        total = sum(
-            (item.price if hasattr(item, 'price') else
-             item['product'].price * item['quantity'])
-            for item in items
-        )
+        # Подсчет суммы
+        total = 0
+        for item in items:
+            if hasattr(item, 'price'):
+                total += item.price
+            else:
+                total += item['product'].price * item['quantity']
 
+        # Создаем заказ
         order = Order(user_id=current_user.id,
                       delivery_time=delivery_time,
+                      address=address,
                       total=total)
         db.session.add(order)
         db.session.flush()
 
+        # Добавляем позиции заказа
         for item in items:
             if isinstance(item, dict):
                 pname = item['product'].name
                 qty = item['quantity']
                 unit = item['product'].price
-                ingred = item['chosen_ingredients']
+                ingred = item.get('chosen_ingredients', '')
             else:
                 pname = item.product.name
                 qty = item.quantity
                 unit = item.price / qty
-                ingred = item.chosen_ingredients
+                ingred = getattr(item, 'chosen_ingredients', '')
 
             order_item = OrderItem(
                 order_id=order.id,
@@ -154,7 +159,7 @@ def checkout():
             )
             db.session.add(order_item)
 
-#чистка
+        # Очищаем корзину
         CartItem.query.filter_by(user_id=current_user.id).delete()
         session.pop('cart', None)
 
@@ -163,6 +168,7 @@ def checkout():
         return redirect(url_for('main.orders'))
 
     return render_template('checkout.html', form=form, items=items)
+
 
 @main_bp.route('/orders')
 @login_required

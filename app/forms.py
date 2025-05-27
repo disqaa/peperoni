@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, DateTimeField
-from wtforms.validators import DataRequired, Length
+from wtforms import StringField, PasswordField, SubmitField, DateTimeLocalField
+from wtforms.validators import DataRequired, Length, ValidationError
+from datetime import datetime
 
 class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
@@ -13,8 +14,11 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 class DeliveryForm(FlaskForm):
-    delivery_time = DateTimeField(
-        'Preferred delivery time (YYYY-MM-DD HH:MM)',
-        format='%Y-%m-%d %H:%M',
-        validators=[DataRequired()])
-    submit = SubmitField('Place order')
+    address = StringField('Адрес', validators=[DataRequired()])
+    delivery_time = DateTimeLocalField('Время доставки', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
+    submit = SubmitField('Оформить заказ')
+
+    def validate_delivery_time(self, field):
+        now = datetime.now().replace(second=0, microsecond=0)
+        if field.data < now:
+            raise ValidationError('Время доставки не может быть в прошлом.')

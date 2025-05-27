@@ -8,8 +8,19 @@
         {{ form.hidden_tag() }}
 
         <div class="mb-3">
-            <label for="delivery_time" class="form-label">Выберите время доставки:</label>
+            {{ form.address.label(class="form-label") }}
+            {{ form.address(class="form-control") }}
+            {% for error in form.address.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.delivery_time.label(class="form-label") }}
             {{ form.delivery_time(class="form-control") }}
+            {% for error in form.delivery_time.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
         </div>
 
         {% if items %}
@@ -65,7 +76,7 @@
         </div>
 
         <div class="mt-4 text-end">
-            <button type="submit" class="btn btn-primary">Подтвердить заказ</button>
+            {{ form.submit(class="btn btn-primary") }}
         </div>
         {% else %}
             <p>Ваша корзина пуста.</p>
