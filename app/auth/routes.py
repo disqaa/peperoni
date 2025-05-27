@@ -15,10 +15,17 @@ def register():
         if User.query.filter_by(username=form.username.data).first():
             flash('Username already exists', 'danger')
             return redirect(url_for('auth.register'))
+
         user = User(username=form.username.data)
         user.set_password(form.password.data)
+
+        # сохраняем как строку
+        if form.favorite_categories.data:
+            user.favorite_categories = ",".join(form.favorite_categories.data)
+
         db.session.add(user)
         db.session.commit()
+
         flash('Registration successful. Please log in.', 'success')
         return redirect(url_for('auth.login'))
     return render_template('register.html', form=form)

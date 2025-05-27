@@ -19,11 +19,11 @@ def index():
 def menu():
     category = request.args.get("category")
     query = Product.query
+
     if category:
         query = query.filter_by(category=category)
     products = query.all()
 
-    #фильтры по категориям
     categories = (
         db.session.query(Product.category)
         .distinct()
@@ -31,11 +31,19 @@ def menu():
         .all()
     )
     categories = [c[0] for c in categories]
+
+    # логика любимых категорий
+    favorite_products = []
+    if current_user.is_authenticated and current_user.favorite_categories:
+        fav_list = [c.strip() for c in current_user.favorite_categories.split(',')]
+        favorite_products = Product.query.filter(Product.category.in_(fav_list)).limit(6).all()
+
     return render_template("menu.html",
                            products=products,
                            current_category=category,
-                           categories=categories)
-
+                           categories=categories,
+                           favorite_products=favorite_products,
+                           show_favorites=(category is None))
 
 
 def get_cart_items():
@@ -111,7 +119,7 @@ def remove_from_cart(product_id):
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
-    items = get_cart_items()  # твоя функция получения корзины
+    items = get_cart_items()
     if not items:
         flash('Корзина пуста.', 'warning')
         return redirect(url_for('main.menu'))
@@ -121,7 +129,7 @@ def checkout():
         delivery_time = form.delivery_time.data
         address = form.address.data
 
-        # Подсчет суммы
+        # подсчет суммы
         total = 0
         for item in items:
             if hasattr(item, 'price'):
@@ -129,7 +137,6 @@ def checkout():
             else:
                 total += item['product'].price * item['quantity']
 
-        # Создаем заказ
         order = Order(user_id=current_user.id,
                       delivery_time=delivery_time,
                       address=address,
@@ -137,7 +144,6 @@ def checkout():
         db.session.add(order)
         db.session.flush()
 
-        # Добавляем позиции заказа
         for item in items:
             if isinstance(item, dict):
                 pname = item['product'].name
@@ -159,7 +165,7 @@ def checkout():
             )
             db.session.add(order_item)
 
-        # Очищаем корзину
+      #чистка
         CartItem.query.filter_by(user_id=current_user.id).delete()
         session.pop('cart', None)
 

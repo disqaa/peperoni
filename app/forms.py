@@ -1,12 +1,26 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, DateTimeLocalField
+from wtforms import StringField, PasswordField, SubmitField, DateTimeLocalField, SelectMultipleField
 from wtforms.validators import DataRequired, Length, ValidationError
 from datetime import datetime
+from wtforms.widgets import ListWidget, CheckboxInput
+
 
 class RegisterForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
+    username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Register')
+    favorite_categories = SelectMultipleField(
+        'Любимые категории пиццы',
+        choices=[
+            ('мясная', 'Мясная'),
+            ('сырная', 'Сырная'),
+            ('веган', 'Веган'),
+            ('морепродукты', 'Морепродукты'),
+            ('острая', 'Острая')
+        ],
+        widget=ListWidget(prefix_label=False),
+        option_widget=CheckboxInput()
+    )
+    submit = SubmitField('Зарегистрироваться')
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
