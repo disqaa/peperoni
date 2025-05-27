@@ -15,10 +15,27 @@ def index():
     return render_template('index.html')
 
 
-@main_bp.route('/menu')
+@main_bp.route("/menu")
 def menu():
-    products = Product.query.all()
-    return render_template('menu.html', products=products)
+    category = request.args.get("category")
+    query = Product.query
+    if category:
+        query = query.filter_by(category=category)
+    products = query.all()
+
+    #фильтры по категориям
+    categories = (
+        db.session.query(Product.category)
+        .distinct()
+        .order_by(Product.category)
+        .all()
+    )
+    categories = [c[0] for c in categories]
+    return render_template("menu.html",
+                           products=products,
+                           current_category=category,
+                           categories=categories)
+
 
 
 def get_cart_items():
