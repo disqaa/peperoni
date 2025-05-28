@@ -9,11 +9,13 @@
 
         <div class="mb-3">
             {{ form.address.label(class="form-label") }}
-            {{ form.address(class="form-control") }}
+            {{ form.address(class="form-control", id="address") }}
             {% for error in form.address.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
+
+        <div id="map" style="width: 100%; height: 400px; margin-bottom: 20px;"></div>
 
         <div class="mb-3">
             {{ form.delivery_time.label(class="form-label") }}
@@ -37,20 +39,8 @@
             <tbody>
                 {% for item in items %}
                 <tr>
-                    <td>
-                        {% if item.product %}
-                            {{ item.product.name }}
-                        {% else %}
-                            {{ item['product'].name }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.chosen_ingredients %}
-                            {{ item.chosen_ingredients }}
-                        {% else %}
-                            {{ item['chosen_ingredients'] }}
-                        {% endif %}
-                    </td>
+                    <td>{{ item.product.name if item.product else item['product'].name }}</td>
+                    <td>{{ item.chosen_ingredients if item.chosen_ingredients else item['chosen_ingredients'] }}</td>
                     <td>{{ item.quantity or item['quantity'] }}</td>
                     <td>
                         {% if item.price %}
@@ -83,4 +73,62 @@
         {% endif %}
     </form>
 </div>
+
+<!-- ключ апишки!!! и логика добалвения адреса  -->
+<script src="https://api-maps.yandex.ru/2.1/?apikey=e7610926-89be-4220-8e3b-0abd17b225b7&lang=ru_RU" type="text/javascript"></script>
+
+<script>
+  ymaps.ready(init);
+
+  function init() {
+    const map = new ymaps.Map("map", {
+      center: [55.751244, 37.618423],
+      zoom: 11,
+      controls: ['zoomControl']
+    });
+
+    const placemark = new ymaps.Placemark(map.getCenter(), {}, {
+      draggable: true,
+      preset: 'islands#redIcon'
+    });
+
+    map.geoObjects.add(placemark);
+
+    let geocodeTimeout = null;
+
+    function getAddress(coords) {
+      clearTimeout(geocodeTimeout);
+      geocodeTimeout = setTimeout(() => {
+        ymaps.geocode(coords).then(function (res) {
+          const firstGeoObject = res.geoObjects.get(0);
+          if (firstGeoObject) {
+            const address = firstGeoObject.getAddressLine();
+            document.getElementById("address").value = address;
+          } else {
+            console.error("Адрес не найден");
+          }
+        }, function (err) {
+          console.error("Ошибка геокодирования: ", err);
+        });
+      }, 300);
+    }
+
+
+    placemark.events.add('dragend', function () {
+      const coords = placemark.geometry.getCoordinates();
+      getAddress(coords);
+    });
+
+
+    map.events.add('click', function (e) {
+      const coords = e.get('coords');
+      placemark.geometry.setCoordinates(coords);
+      getAddress(coords);
+    });
+
+
+    getAddress(map.getCenter());
+  }
+</script>
+
 {% endblock %}
