@@ -10,18 +10,18 @@
     </div>
 
     <div class="col-md-7">
-      <div class="card shadow-sm p-4">
+      <div class="card shadow-sm p-4 mb-4 animate__animated animate__fadeIn">
         <h2 class="mb-3">{{ product.name }}</h2>
         <p class="text-muted">{{ product.description }}</p>
 
-        <form method="POST" action="{{ url_for('main.add_to_cart', product_id=product.id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <form method="POST" action="{{ url_for('main.product_detail', product_id=product.id) }}">
+          {{ form.hidden_tag() }}
 
           {% if product.ingredients %}
           <div class="mb-4">
             <label class="form-label fw-bold">Добавьте ингредиенты:</label>
             {% for ingredient in product.ingredients %}
-              <div class="d-flex align-items-center justify-content-between border rounded p-2 mb-2">
+              <div class="d-flex align-items-center justify-content-between border rounded p-2 mb-2 ingredient-item">
                 <div>
                   <strong>{{ ingredient.name }}</strong> (+${{ '%.2f' % ingredient.price }})
                 </div>
@@ -54,8 +54,118 @@
       </div>
     </div>
   </div>
+
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="p-4 border rounded bg-light shadow-sm animate__animated animate__fadeInUp">
+        <h3 class="mb-4">Отзывы</h3>
+
+        {% if reviews %}
+          <ul class="list-unstyled">
+            {% for review in reviews %}
+              <li class="mb-3 border-bottom pb-2 review-item">
+                <div class="d-flex justify-content-between align-items-center">
+                  <strong>{{ review.user.username }}</strong>
+                  <span>
+                    {% for i in range(1,6) %}
+                      {% if i <= review.rating %}
+                        <span class="text-warning">&#9733;</span>
+                      {% else %}
+                        <span class="text-secondary">&#9733;</span>
+                      {% endif %}
+                    {% endfor %}
+                  </span>
+                </div>
+                <p class="mb-1">{{ review.text }}</p>
+                <small class="text-muted">{{ review.timestamp.strftime('%d.%m.%Y %H:%M') }}</small>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted">Пока нет отзывов. Будьте первым!</p>
+        {% endif %}
+
+        {% if current_user.is_authenticated %}
+          <form method="POST" action="{{ url_for('main.product_detail', product_id=product.id) }}" class="mt-4">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Оценка:</label>
+              <div class="star-rating">
+                {% for i in range(5, 0, -1) %}
+                  <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" {% if form.rating.data == i %}checked{% endif %}>
+                  <label for="star{{ i }}" title="{{ i }} звезда">&#9733;</label>
+                {% endfor %}
+              </div>
+              {% for error in form.rating.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              <label for="text" class="form-label fw-bold">Отзыв:</label>
+              {{ form.text(class="form-control shadow-sm", rows=4) }}
+              {% for error in form.text.errors %}
+                <div class="text-danger">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary">Отправить отзыв</button>
+          </form>
+        {% else %}
+          <p class="text-muted">Чтобы оставить отзыв, <a href="{{ url_for('auth.login') }}">войдите в аккаунт</a>.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
+<style>
+  .ingredient-item:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  }
+
+  .star-rating {
+    direction: rtl;
+    font-size: 1.6rem;
+    unicode-bidi: bidi-override;
+    display: inline-flex;
+  }
+
+  .star-rating input[type="radio"] {
+    display: none;
+  }
+
+  .star-rating label {
+    color: #ccc;
+    cursor: pointer;
+    transition: transform 0.2s, color 0.2s;
+  }
+
+  .star-rating input[type="radio"]:checked ~ label,
+  .star-rating label:hover,
+  .star-rating label:hover ~ label {
+    color: #ffc107;
+    transform: scale(1.2);
+  }
+
+  .review-item {
+    transition: all 0.3s ease;
+  }
+
+  .review-item:hover {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  }
+</style>
+
+<!-- цена счет-->
 <script>
   const basePrice = parseFloat({{ product.price }});
   const quantityInput = document.getElementById('quantity');

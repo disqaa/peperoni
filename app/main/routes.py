@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, session, request
 from flask_login import current_user, login_required
 from datetime import datetime
-from ..models import Product, CartItem, Order, OrderItem, Ingredient
-from ..forms import DeliveryForm
+from ..models import Product, CartItem, Order, OrderItem, Ingredient, Review
+from ..forms import DeliveryForm, ReviewForm
 from ..extensions import db
 from flask import abort
 
@@ -201,8 +201,25 @@ def merge_cart_to_db(sender, user):
 @main_bp.route('/product/<int:product_id>', methods=['GET', 'POST'])
 def product_detail(product_id):
     product = Product.query.get_or_404(product_id)
+    form = ReviewForm()
+    reviews = product.reviews.order_by(Review.timestamp.desc()).all()
 
-    if request.method == 'POST':
+    # Обработка отзыва
+    if form.validate_on_submit() and current_user.is_authenticated:
+        existing_review = Review.query.filter_by(user_id=current_user.id, product_id=product_id).first()
+        review = Review(
+            rating=int(form.rating.data),
+            text=form.text.data,
+            user_id=current_user.id,
+            product_id=product.id
+        )
+        db.session.add(review)
+        db.session.commit()
+        flash('Спасибо за отзыв!', 'success')
+        return redirect(url_for('main.product_detail', product_id=product_id))
+
+    # корзина
+    if request.method == 'POST' and 'quantity' in request.form:
         quantity = int(request.form.get('quantity', 1))
         ingredients_data = {}
 
@@ -254,4 +271,4 @@ def product_detail(product_id):
         flash('Товар добавлен в корзину', 'success')
         return redirect(url_for('main.cart'))
 
-    return render_template('product_detail.html', product=product)
+    return render_template('product_detail.html', product=product, form=form, reviews=reviews)

@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from .extensions import db, login_manager
 from sqlalchemy.orm import relationship
-
+from datetime import datetime
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -76,3 +76,16 @@ class Ingredient(db.Model):
     id   = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     price = db.Column(db.Float, nullable=False, default=0.0)
+
+
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rating = db.Column(db.Integer, nullable=False)
+    text = db.Column(db.Text, nullable=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+
+    user = db.relationship('User', backref=db.backref('reviews', lazy='dynamic'))
+    product = db.relationship('Product', backref=db.backref('reviews', lazy='dynamic'))

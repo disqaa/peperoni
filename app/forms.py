@@ -1,8 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, DateTimeLocalField, SelectMultipleField
-from wtforms.validators import DataRequired, Length, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, DateTimeLocalField, SelectMultipleField, SelectField, TextAreaField
+from wtforms.validators import DataRequired, Length, ValidationError, Optional
 from datetime import datetime
 from wtforms.widgets import ListWidget, CheckboxInput
+
 
 
 class RegisterForm(FlaskForm):
@@ -36,3 +37,9 @@ class DeliveryForm(FlaskForm):
         now = datetime.now().replace(second=0, microsecond=0)
         if field.data < now:
             raise ValidationError('Время доставки не может быть в прошлом.')
+
+
+class ReviewForm(FlaskForm):
+    rating = SelectField("Оценка", choices=[(str(i), f"{i} звёзд") for i in range(1, 6)], validators=[DataRequired()])
+    text = TextAreaField("Комментарий", validators=[Optional(), Length(max=1000)])
+    submit = SubmitField("Оставить отзыв")
