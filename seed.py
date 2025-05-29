@@ -7,7 +7,7 @@ with app.app_context():
     db.drop_all()
     db.create_all()
 
-    cheese   = Ingredient(name="Сыр моцарелла",  price=0.5)
+    cheese   = Ingredient(name="Сыр моцарелла",   price=0.5)
     sauce    = Ingredient(name="Томатный соус",   price=0.3)
     pepperoni= Ingredient(name="Пепперони",       price=0.7)
     mushrooms= Ingredient(name="Грибы",           price=0.6)
@@ -127,4 +127,4 @@ with app.app_context():
     db.session.add_all([cheese, sauce, pepperoni, mushrooms, olives, basil, shrimp, chili, bacon])
     db.session.add_all(pizzas)
     db.session.commit()
-    print("✓ БД заполнена 9 пиццами")
+    print("✓ БД заполнена пиццами")
