@@ -13,7 +13,7 @@ def register():
     form = RegisterForm()
     if form.validate_on_submit():
         if User.query.filter_by(username=form.username.data).first():
-            flash('Username already exists', 'danger')
+            flash('Имя пользователя уже занято', 'danger')
             return redirect(url_for('auth.register'))
 
         user = User(username=form.username.data)
@@ -26,7 +26,7 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        flash('Registration successful. Please log in.', 'success')
+        flash('Регистрация прошла успешно. Пожалуйста, войдите.', 'success')
         return redirect(url_for('auth.login'))
     return render_template('register.html', form=form)
 
@@ -39,15 +39,15 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and user.check_password(form.password.data):
             login_user(user)
-            flash('Logged in successfully.', 'success')
+            flash('Успешно', 'success')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('main.index'))
-        flash('Invalid username or password', 'danger')
+        flash('Неправильный логин или пароль', 'danger')
     return render_template('login.html', form=form)
 
 @auth_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out.', 'info')
+    flash('Вы вышли из аккаунта', 'info')
     return redirect(url_for('main.index'))

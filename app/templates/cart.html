@@ -5,44 +5,53 @@
     <h2 class="mb-4">Корзина</h2>
 
     {% if items %}
-    <table class="table table-striped">
+    <table class="table table-striped align-middle">
         <thead>
             <tr>
                 <th>Товар</th>
                 <th>Ингредиенты</th>
-                <th>Количество</th>
+                <th class="text-center">Количество</th>
                 <th>Сумма</th>
+                <th class="text-end">Удалить</th>
             </tr>
         </thead>
         <tbody>
             {% for item in items %}
             <tr>
-                <td>
-                    {% if item.product %}
-                        {{ item.product.name }}
-                    {% else %}
-                        {{ item['product'].name }}
-                    {% endif %}
-                </td>
-                <td>
-                    {% if item.chosen_ingredients %}
-                        {{ item.chosen_ingredients }}
-                    {% else %}
-                        {{ item['chosen_ingredients'] }}
-                    {% endif %}
-                </td>
-                <td>
-                    {% if item.quantity %}
-                        {{ item.quantity }}
-                    {% else %}
-                        {{ item['quantity'] }}
-                    {% endif %}
-                </td>
-                <td>
-                    {% if item.price %}
-                        {{ "%.2f"|format(item.price) }} $
-                    {% else %}
-                        {{ "%.2f"|format(item['product'].price * item['quantity']) }} $
+                <td>{{ item.product.name if item.product else item['product'].name }}</td>
+                <td>{{ item.chosen_ingredients if item.chosen_ingredients else item['chosen_ingredients'] }}</td>
+                <td class="text-center">{{ item.quantity if item.quantity else item['quantity'] }}</td>
+                <td>{{ "%.2f"|format(item.price) if item.price else "%.2f"|format(item['product'].price * item['quantity']) }} $</td>
+                <td class="text-end">
+                    {% if item.id %}
+                    <button type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteModal{{ item.id }}">
+                        ✖ Удалить
+                    </button>
+
+                    <!-- Модальное окно -->
+                    <div class="modal fade" id="deleteModal{{ item.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ item.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteModalLabel{{ item.id }}">Удалить товар</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Вы уверены, что хотите удалить <strong>{{ item.product.name if item.product else item['product'].name }}</strong> из корзины?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                                    <form method="POST" action="{{ url_for('main.remove_from_cart', item_id=item.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-danger">Удалить</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% endif %}
                 </td>
             </tr>

@@ -100,21 +100,18 @@ def cart():
     items = get_cart_items()
     return render_template('cart.html', items=items)
 
-@main_bp.route('/remove_from_cart/<int:product_id>', methods=['POST'])
-def remove_from_cart(product_id):
-    if current_user.is_authenticated:
-        cart_item = CartItem.query.filter_by(user_id=current_user.id, product_id=product_id).first()
-        if cart_item:
-            db.session.delete(cart_item)
-            db.session.commit()
-            flash('Item removed from cart.', 'info')
-    else:
-        cart = session.get('cart', {})
-        cart.pop(str(product_id), None)
-        session['cart'] = cart
-        session.modified = True
-        flash('Item removed from cart.', 'info')
+@main_bp.route('/remove_from_cart/<int:item_id>', methods=['POST'])
+@login_required
+def remove_from_cart(item_id):
+    item = CartItem.query.get_or_404(item_id)
+    if item.user_id != current_user.id:
+        flash('Нельзя удалить этот товар', 'danger')
+        return redirect(url_for('main.cart'))
+    db.session.delete(item)
+    db.session.commit()
+    flash('Товар удалён', 'success')
     return redirect(url_for('main.cart'))
+
 
 @main_bp.route('/checkout', methods=['GET', 'POST'])
 @login_required

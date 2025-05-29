@@ -12,10 +12,10 @@
     <a class="navbar-brand" href="{{ url_for('main.index') }}">Pizza at Chizhik</a>
     <div class="collapse navbar-collapse">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.menu') }}">Menu</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.cart') }}">Cart</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.menu') }}">Меню</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.cart') }}">Корзина</a></li>
         {% if current_user.is_authenticated %}
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.orders') }}">My Orders</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.orders') }}">История заказов</a></li>
         {% endif %}
       </ul>
       <ul class="navbar-nav ms-auto">

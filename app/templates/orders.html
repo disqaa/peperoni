@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Your Orders</h2>
+<h2>Твои заказы</h2>
 
 {% if orders %}
   {% for order in orders %}
     <div class="card mb-3">
       <div class="card-body">
-        <h5>Order #{{ order.id }} - Placed on {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</h5>
-        <p>Delivery Time: {{ order.delivery_time.strftime('%Y-%m-%d %H:%M') }}</p>
-        <p>Address: {{ order.address }}</p>  {# Вот добавленное поле адреса #}
-        <p>Total: ${{ '%.2f' % order.total }}</p>
+        <h5>Заказ #{{ order.id }} - Время заказа {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</h5>
+        <p>Время доставки: {{ order.delivery_time.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p>Адрес: {{ order.address }}</p>  {# Вот добавленное поле адреса #}
+        <p>Сумма: ${{ '%.2f' % order.total }}</p>
         <ul>
           {% for item in order.items %}
           <li>{{ item.product_name }} x {{ item.quantity }} - ${{ '%.2f' % item.price }}</li>
@@ -20,7 +20,7 @@
     </div>
   {% endfor %}
 {% else %}
-<p>You have no orders yet.</p>
+<p>У тебя еще не было заказов!</p>
 {% endif %}
 
 {% endblock %}
